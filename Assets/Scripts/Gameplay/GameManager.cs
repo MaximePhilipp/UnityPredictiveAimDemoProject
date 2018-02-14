@@ -40,6 +40,10 @@ public class GameManager : MonoBehaviour {
 		
 			// TODO start your game
 		}
+
+		if (LeanTouch.Fingers.Count > 0) {
+			Debug.Log("Finger position : " + LeanTouch.Fingers[0].ScreenPosition);
+		}
 	}
 
 	
