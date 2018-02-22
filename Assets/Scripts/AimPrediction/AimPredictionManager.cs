@@ -102,6 +102,18 @@ namespace AimPrediction {
 
 
 		private void PredictTrajectory(Vector3 startVelocity, float timestep) {
+			Vector2[] pointsPositions = Plot(_objectBody, transform.position, startVelocity, _dotsToDisplay);
+			Debug.Log("Dots to display : " + _dots.Count + " ; Points prediction : " + pointsPositions.Length);
+
+			for (int i = 0; i < _dots.Count; i++) {
+				_dots[i].transform.position = pointsPositions[Math.Min(i, pointsPositions.Length - 1)];
+			}
+
+			return;
+			
+			
+			
+			
 			Vector3 start = transform.position;
 			bool collider = false;
 			int k = 1;
@@ -142,6 +154,30 @@ namespace AimPrediction {
 		
 		private Vector3 PredictTrajectoryAtTime (Vector3 start, Vector3 startVelocity, float time, float timeGravity, float coeff) {
 			return start + startVelocity * time + Physics.gravity * _objectBody.gravityScale * time * timeGravity * coeff;
+		}
+		
+		
+		
+		
+		// New prediction method
+		
+		public static Vector2[] Plot(Rigidbody2D rigidbody, Vector2 pos, Vector2 velocity, int steps) {
+			Vector2[] results = new Vector2[steps];
+ 
+			float timestep = Time.fixedDeltaTime / Physics2D.velocityIterations;
+			Vector2 gravityAccel = Physics2D.gravity * rigidbody.gravityScale * timestep * timestep;
+			float drag = 1f - timestep * rigidbody.drag;
+			Vector2 moveStep = velocity * timestep;
+ 
+			for (int i = 0; i < steps; ++i)
+			{
+				moveStep += gravityAccel;
+				moveStep *= drag;
+				pos += moveStep;
+				results[i] = pos;
+			}
+ 
+			return results;
 		}
 	}
 }

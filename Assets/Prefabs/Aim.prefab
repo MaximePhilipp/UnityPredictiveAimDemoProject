@@ -81,8 +81,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _dotsToDisplay: 200
-  _predictionTime: 2
-  _hideAtStartup: 1
+  _predictionTime: 3
   _stopPredictionOnFirstCollision: 0
   _dotPrefab: {fileID: 212284636838508442, guid: 5cc99d07516304ae7b80b4b64118fc66,
     type: 2}
