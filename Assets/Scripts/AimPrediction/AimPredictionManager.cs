@@ -69,7 +69,7 @@ namespace AimPrediction {
 				throw new Exception("Trying to update the aim prediction before initializing the component! Try calling Init() first.");
 			
 			transform.rotation = Quaternion.Euler(0f, 0f, VectorUtils.AngleBetweenVector2(Vector2.zero, aimVector));
-			PredictTrajectory(aimVector * (_shooterMaxVelocity * strengthPercent), _predictionTime / _dotsToDisplay);
+			PredictTrajectory(aimVector * (_shooterMaxVelocity * strengthPercent));
 		}
 		
 		
@@ -101,19 +101,23 @@ namespace AimPrediction {
 		}
 
 
-		private void PredictTrajectory(Vector3 startVelocity, float timestep) {
-			Vector2[] pointsPositions = Plot(_objectBody, transform.position, startVelocity, _dotsToDisplay);
-			Debug.Log("Dots to display : " + _dots.Count + " ; Points prediction : " + pointsPositions.Length);
+		private void PredictTrajectory(Vector3 startVelocity) {
+			List<Vector2> predictedPositions = Plot(_objectBody, transform.position, startVelocity);
 
 			for (int i = 0; i < _dots.Count; i++) {
-				_dots[i].transform.position = pointsPositions[Math.Min(i, pointsPositions.Length - 1)];
+				if (i > predictedPositions.Count - 1 && _dots[i].gameObject.activeSelf) {
+					_dots[i].gameObject.SetActive(false);
+					return;
+				}
+				
+				_dots[i].transform.position = predictedPositions[i];
+				if(!_dots[i].gameObject.activeSelf)
+					_dots[i].gameObject.SetActive(true);
 			}
-
-			return;
 			
 			
 			
-			
+			/*
 			Vector3 start = transform.position;
 			bool collider = false;
 			int k = 1;
@@ -149,7 +153,7 @@ namespace AimPrediction {
 				_dots[i].gameObject.SetActive(true);
 				currentTransform.position = pos;
 				k++;
-			}
+			}*/
 		}
 		
 		private Vector3 PredictTrajectoryAtTime (Vector3 start, Vector3 startVelocity, float time, float timeGravity, float coeff) {
@@ -161,20 +165,22 @@ namespace AimPrediction {
 		
 		// New prediction method
 		
-		public static Vector2[] Plot(Rigidbody2D rigidbody, Vector2 pos, Vector2 velocity, int steps) {
-			Vector2[] results = new Vector2[steps];
+		public List<Vector2> Plot(Rigidbody2D body, Vector2 pos, Vector2 velocity) {
+			float timeStep = Mathf.Max( _predictionTime / (_dotsToDisplay * 1f), Time.fixedDeltaTime / Physics2D.velocityIterations);
+			List<Vector2> results = new List<Vector2>();
  
-			float timestep = Time.fixedDeltaTime / Physics2D.velocityIterations;
-			Vector2 gravityAccel = Physics2D.gravity * rigidbody.gravityScale * timestep * timestep;
-			float drag = 1f - timestep * rigidbody.drag;
-			Vector2 moveStep = velocity * timestep;
- 
-			for (int i = 0; i < steps; ++i)
-			{
+			Vector2 gravityAccel = Physics2D.gravity * body.gravityScale * timeStep * timeStep;
+			float drag = 1f - timeStep * body.drag;
+			Vector2 moveStep = velocity * timeStep;
+
+			float elapsedTime = 0f;
+			while(elapsedTime < _predictionTime) {
 				moveStep += gravityAccel;
 				moveStep *= drag;
 				pos += moveStep;
-				results[i] = pos;
+				results.Add(pos);
+
+				elapsedTime += timeStep;
 			}
  
 			return results;
