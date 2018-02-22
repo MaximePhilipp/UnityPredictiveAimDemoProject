@@ -15,11 +15,15 @@ namespace Shooter {
 
 		private LeanFinger _currentFinger;
 		
+		
+		
+		
+		
+		// Lifecycle : 
+		
 		private void Awake() {
-			_aimPrediction.Init(_shooterMaxStrength, _objectToThrow.GetComponent<Rigidbody2D>().gravityScale);
+			_aimPrediction.Init(_shooterMaxStrength, _objectToThrow.GetComponent<Rigidbody2D>());
 		}
-		
-		
 		
 		protected virtual void OnEnable() {
 			LeanTouch.OnFingerDown += OnFingerDown;
@@ -30,7 +34,27 @@ namespace Shooter {
 			LeanTouch.OnFingerDown -= OnFingerDown;
 			LeanTouch.OnFingerUp -= OnFingerUp;
 		}
+		
+		private void Update() {
+			if (_currentFinger != null) {
+				float strengthPercent = GetStrengthPercent();
+				
+				if (strengthPercent < 0.2f) {
+					_aimPrediction.Hide();
+					return;
+				}
+				
+				_aimPrediction.Show();
+				_aimPrediction.UpdateDisplay(GetAngleOfCurrentFinger(), GetStrengthPercent());
+			}
+		}
+		
+		
+		
 
+		
+		// Touch Handling :
+		
 		private void OnFingerDown(LeanFinger finger) {
 			if (_currentFinger == null) {
 				_currentFinger = finger;
@@ -53,20 +77,6 @@ namespace Shooter {
 				// Instantiates the object and shoot!
 				GameObject obj = Instantiate(_objectToThrow, transform.position, Quaternion.identity, null);
 				obj.GetComponent<Rigidbody2D>().AddForce(angle * _shooterMaxStrength * strengthPercent, ForceMode2D.Impulse);
-			}
-		}
-		
-		private void Update() {
-			if (_currentFinger != null) {
-				float strengthPercent = GetStrengthPercent();
-				
-				if (strengthPercent < 0.2f) {
-					_aimPrediction.Hide();
-					return;
-				}
-				
-				_aimPrediction.Show();
-				_aimPrediction.UpdateDisplay(GetAngleOfCurrentFinger(), GetStrengthPercent());
 			}
 		}
 		

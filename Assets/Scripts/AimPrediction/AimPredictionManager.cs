@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Misc;
 using UnityEditor;
 using UnityEngine;
@@ -10,8 +11,6 @@ namespace AimPrediction {
 		[SerializeField] private int _dotsToDisplay;
 		[Tooltip("The higher the value, the bigger the aim will be.")]
 		[SerializeField] private float _predictionTime;
-
-		[SerializeField] private bool _hideAtStartup;
 		[SerializeField] private bool _stopPredictionOnFirstCollision;
 		
 		// TODO 
@@ -20,9 +19,10 @@ namespace AimPrediction {
 		
 		
 		private int _layerMaskId;
+		private bool _isInit;
 		private List<SpriteRenderer> _dots;
 		private float _shooterMaxVelocity;
-		private float _objectGravityScale;
+		private Rigidbody2D _objectBody;
 		
 		
 		
@@ -30,29 +30,47 @@ namespace AimPrediction {
 		
 		// PUBLIC API :
 
-		public void Init(float shooterMaxVelocity, float objectGravityScale) {
+		/// <summary>
+		/// Sets the basic information needed for the aim prediction. Call this before anything else!
+		/// </summary>
+		/// <param name="shooterMaxVelocity">The maximum force magnitude applied to your object by the shooter.</param>
+		/// <param name="objectGravityScale">The rigidbody of your object's prefab. The component will extract the needed physics information.</param>
+		public void Init(float shooterMaxVelocity, Rigidbody2D objectRigidBody) {
 			_shooterMaxVelocity = shooterMaxVelocity;
-			_objectGravityScale = objectGravityScale;
+			_objectBody = objectRigidBody;
+			_isInit = true;
 		}
 		
+		/// <summary>
+		/// Displays the aim prediction if it wasn't already the case. Does nothing otherwise.
+		/// </summary>
 		public void Show() {
 			if(!gameObject.activeSelf)
 				gameObject.SetActive(true);
 		}
 
+		/// <summary>
+		/// Hides the aim prediction if it wasn't already the case. Does nothing otherwise.
+		/// </summary>
 		public void Hide() {
 			if(gameObject.activeSelf)
 				gameObject.SetActive(false);
 		}
 
+		/// <summary>
+		/// Updates the aim prediction with the current aim information. Usually this method is called on Update but you
+		/// can call this less often if you want a more jittery display.
+		/// </summary>
+		/// <param name="aimVector">The normalized vector of the current aim.</param>
+		/// <param name="strengthPercent">The strength percentage between 0.0 and 1.0.</param>
+		/// <exception cref="Exception"></exception>
 		public void UpdateDisplay(Vector2 aimVector, float strengthPercent) {
+			if(!_isInit)
+				throw new Exception("Trying to update the aim prediction before initializing the component! Try calling Init() first.");
+			
 			transform.rotation = Quaternion.Euler(0f, 0f, VectorUtils.AngleBetweenVector2(Vector2.zero, aimVector));
 			PredictTrajectory(aimVector * (_shooterMaxVelocity * strengthPercent), _predictionTime / _dotsToDisplay);
 		}
-		
-		
-		
-		
 		
 		
 		
@@ -78,9 +96,8 @@ namespace AimPrediction {
 				SpriteRenderer dot = Instantiate(_dotPrefab, Vector3.zero, Quaternion.identity, container);
 				_dots.Add(dot);
 			}
-			
-			if(_hideAtStartup)
-				gameObject.SetActive(false);
+
+			Hide();
 		}
 
 
@@ -104,7 +121,7 @@ namespace AimPrediction {
 					Vector2 startPt = new Vector2(previousTransform.position.x, previousTransform.position.y);
 					Vector2 end = new Vector2(pos.x,pos.y);
 					hit = Physics2D.Linecast (startPt, end, _layerMaskId);
-					if(hit.collider != null){
+					if(hit.collider != null) {
 						if (!_stopPredictionOnFirstCollision) {
 							startVelocity = Vector3.Reflect(startVelocity, hit.normal);
 							start = pos = hit.point;
@@ -113,7 +130,7 @@ namespace AimPrediction {
 							currentTransform.position = pos;
 						}
 						_dots [i].gameObject.SetActive(false);
-						coeff = 0.75f;
+						coeff = 0.9f;
 						continue;
 					}
 				}
@@ -124,7 +141,7 @@ namespace AimPrediction {
 		}
 		
 		private Vector3 PredictTrajectoryAtTime (Vector3 start, Vector3 startVelocity, float time, float timeGravity, float coeff) {
-			return start + startVelocity * time + Physics.gravity * _objectGravityScale * time * timeGravity * coeff;
+			return start + startVelocity * time + Physics.gravity * _objectBody.gravityScale * time * timeGravity * coeff;
 		}
 	}
 }
