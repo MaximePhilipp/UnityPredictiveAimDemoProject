@@ -765,6 +765,11 @@ Prefab:
       propertyPath: _predictionTime
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 114715845874887268, guid: b9e65bdd5ae5e4e66ac2fd5ad8a117ed,
+        type: 2}
+      propertyPath: _stopPredictionOnFirstCollision
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: b9e65bdd5ae5e4e66ac2fd5ad8a117ed, type: 2}
   m_IsPrefabParent: 0

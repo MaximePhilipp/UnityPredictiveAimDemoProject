@@ -53,6 +53,7 @@ namespace AimPrediction {
 		/// Hides the aim prediction if it wasn't already the case. Does nothing otherwise.
 		/// </summary>
 		public void Hide() {
+			return;
 			if(gameObject.activeSelf)
 				gameObject.SetActive(false);
 		}
@@ -117,8 +118,8 @@ namespace AimPrediction {
 			
 			
 			
-			/*
-			Vector3 start = transform.position;
+			
+			/*Vector3 start = transform.position;
 			bool collider = false;
 			int k = 1;
 			float coeff = 0.5f;
@@ -173,6 +174,7 @@ namespace AimPrediction {
 			float drag = 1f - timeStep * body.drag;
 			Vector2 moveStep = velocity * timeStep;
 
+			bool hasCollided = false;
 			float elapsedTime = 0f;
 			while(elapsedTime < _predictionTime) {
 				moveStep += gravityAccel;
@@ -181,6 +183,24 @@ namespace AimPrediction {
 				results.Add(pos);
 
 				elapsedTime += timeStep;
+
+				if (results.Count > 1 && !hasCollided) {
+					RaycastHit2D hit;
+					Vector2 previousPosition = results[results.Count - 2];
+					Vector2 currentPosition = results[results.Count - 1];
+
+					hit = Physics2D.Linecast(previousPosition, currentPosition, _layerMaskId);
+					if (hit.collider != null) {
+						hasCollided = true;
+
+						if (_stopPredictionOnFirstCollision)
+							break;
+						
+						moveStep = Vector3.Reflect(moveStep, hit.normal) * body.GetComponent<Collider2D>().bounciness;
+						pos = hit.point;
+						results[results.Count - 1] = pos;
+					}
+				}
 			}
  
 			return results;
