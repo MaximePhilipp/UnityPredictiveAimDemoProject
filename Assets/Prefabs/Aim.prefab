@@ -80,9 +80,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4755c11856804335aaf03f8f2f9faa79, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _displayType: 1
-  _dotsToDisplay: 20
-  _predictionTime: 1.5
+  _displayType: 0
+  _predictionsSteps: 15
+  _predictionTime: 1
   _stopPredictionOnFirstCollision: 0
   _dotPrefab: {fileID: 212284636838508442, guid: 5cc99d07516304ae7b80b4b64118fc66,
     type: 2}
