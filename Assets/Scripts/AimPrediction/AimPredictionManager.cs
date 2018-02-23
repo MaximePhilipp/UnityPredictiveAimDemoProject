@@ -198,7 +198,7 @@ namespace AimPrediction {
 						}
 
 						moveStep = Vector3.Reflect(moveStep * _bodyBounciness, hit.normal);
-						pos = hit.point + moveStep;
+						pos = hit.point + moveStep * 0.1f;
 						results[results.Count - 1] = pos;
 					}
 				}
