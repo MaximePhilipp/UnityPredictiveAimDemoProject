@@ -34,7 +34,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1105874369211800}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -6.48, y: -2.12, z: -0.04548444}
+  m_LocalPosition: {x: 4.26, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -51,7 +51,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad9363d2f507f4df0b354316ae2928ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _objectToThrow: {fileID: 1681426267199016, guid: b9ba25375caea45c1bbd63c2171c621b,
+  _objectToThrow: {fileID: 1681426267199016, guid: 17fb7999193824c99af193ca7caba427,
     type: 2}
   _aimPrediction: {fileID: 0}
   _shooterMaxStrength: 40

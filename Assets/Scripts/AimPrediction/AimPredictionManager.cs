@@ -13,7 +13,6 @@ namespace AimPrediction {
 		[SerializeField] private float _predictionTime;
 		[SerializeField] private bool _stopPredictionOnFirstCollision;
 		
-		// TODO 
 		[SerializeField] private SpriteRenderer _dotPrefab;
 		
 		
@@ -53,7 +52,6 @@ namespace AimPrediction {
 		/// Hides the aim prediction if it wasn't already the case. Does nothing otherwise.
 		/// </summary>
 		public void Hide() {
-			return;
 			if(gameObject.activeSelf)
 				gameObject.SetActive(false);
 		}
@@ -106,65 +104,17 @@ namespace AimPrediction {
 			List<Vector2> predictedPositions = Plot(_objectBody, transform.position, startVelocity);
 
 			for (int i = 0; i < _dots.Count; i++) {
-				if (i > predictedPositions.Count - 1 && _dots[i].gameObject.activeSelf) {
-					_dots[i].gameObject.SetActive(false);
-					return;
+				if (i > predictedPositions.Count - 1) {
+					if(_dots[i].gameObject.activeSelf)
+						_dots[i].gameObject.SetActive(false);
+					continue;
 				}
 				
 				_dots[i].transform.position = predictedPositions[i];
 				if(!_dots[i].gameObject.activeSelf)
 					_dots[i].gameObject.SetActive(true);
 			}
-			
-			
-			
-			
-			/*Vector3 start = transform.position;
-			bool collider = false;
-			int k = 1;
-			float coeff = 0.5f;
-
-			for (int i = 0; i < _dots.Count; i++) {
-				float t = timestep * k;
-				float tgravity = timestep * (i + 1);
-				Transform currentTransform = _dots[i].transform;
-
-				Vector3 pos = PredictTrajectoryAtTime(start, startVelocity, t, tgravity, coeff);
-			 
-				if (i > 0 && !collider) {
-					RaycastHit2D hit;
-					Transform previousTransform = _dots[i - 1].transform;
-					
-					Vector2 startPt = new Vector2(previousTransform.position.x, previousTransform.position.y);
-					Vector2 end = new Vector2(pos.x,pos.y);
-					hit = Physics2D.Linecast (startPt, end, _layerMaskId);
-					if(hit.collider != null) {
-						if (!_stopPredictionOnFirstCollision) {
-							startVelocity = Vector3.Reflect(startVelocity, hit.normal);
-							start = pos = hit.point;
-							collider = true;
-							k = 1;
-							currentTransform.position = pos;
-						}
-						_dots [i].gameObject.SetActive(false);
-						coeff = 0.9f;
-						continue;
-					}
-				}
-				_dots[i].gameObject.SetActive(true);
-				currentTransform.position = pos;
-				k++;
-			}*/
 		}
-		
-		private Vector3 PredictTrajectoryAtTime (Vector3 start, Vector3 startVelocity, float time, float timeGravity, float coeff) {
-			return start + startVelocity * time + Physics.gravity * _objectBody.gravityScale * time * timeGravity * coeff;
-		}
-		
-		
-		
-		
-		// New prediction method
 		
 		public List<Vector2> Plot(Rigidbody2D body, Vector2 pos, Vector2 velocity) {
 			float timeStep = Mathf.Max( _predictionTime / (_dotsToDisplay * 1f), Time.fixedDeltaTime / Physics2D.velocityIterations);
@@ -176,6 +126,7 @@ namespace AimPrediction {
 
 			bool hasCollided = false;
 			float elapsedTime = 0f;
+
 			while(elapsedTime < _predictionTime) {
 				moveStep += gravityAccel;
 				moveStep *= drag;
@@ -190,7 +141,7 @@ namespace AimPrediction {
 					Vector2 currentPosition = results[results.Count - 1];
 
 					hit = Physics2D.Linecast(previousPosition, currentPosition, _layerMaskId);
-					if (hit.collider != null) {
+					if (hit.collider != null && !hasCollided) {
 						hasCollided = true;
 
 						if (_stopPredictionOnFirstCollision)

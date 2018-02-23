@@ -758,12 +758,12 @@ Prefab:
     - target: {fileID: 114715845874887268, guid: b9e65bdd5ae5e4e66ac2fd5ad8a117ed,
         type: 2}
       propertyPath: _dotsToDisplay
-      value: 50
+      value: 200
       objectReference: {fileID: 0}
     - target: {fileID: 114715845874887268, guid: b9e65bdd5ae5e4e66ac2fd5ad8a117ed,
         type: 2}
       propertyPath: _predictionTime
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 114715845874887268, guid: b9e65bdd5ae5e4e66ac2fd5ad8a117ed,
         type: 2}
