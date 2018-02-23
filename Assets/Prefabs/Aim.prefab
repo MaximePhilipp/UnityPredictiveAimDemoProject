@@ -81,9 +81,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _displayType: 0
-  _predictionsSteps: 15
-  _predictionTime: 1
-  _stopPredictionOnFirstCollision: 0
+  _predictionsSteps: 50
+  _predictionTime: 3
+  _maxCollisionsToStopPrediction: 0
   _dotPrefab: {fileID: 212284636838508442, guid: 5cc99d07516304ae7b80b4b64118fc66,
     type: 2}
   _linePrefab: {fileID: 120641541326945986, guid: a886b79998de24bedb3f5d472f11f146,

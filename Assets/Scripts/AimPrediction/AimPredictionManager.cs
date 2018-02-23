@@ -17,7 +17,8 @@ namespace AimPrediction {
 		[SerializeField] private int _predictionsSteps;
 		[Tooltip("Defines how much time ahead should be predicted.")]
 		[SerializeField] private float _predictionTime;
-		[SerializeField] private bool _stopPredictionOnFirstCollision;
+		[Tooltip("The maximum of bounces the prediction will plot. 0 means no bounce previsualization.")]
+		[SerializeField] private int _maxCollisionsToStopPrediction;
 		
 		[SerializeField] private SpriteRenderer _dotPrefab;
 		[SerializeField] private LineRenderer _linePrefab;
@@ -167,6 +168,7 @@ namespace AimPrediction {
 			bool hasCollided = false;
 			float elapsedTime = 0f;
 
+			int collisionsCount = 0;
 			while(elapsedTime < _predictionTime) {
 				moveStep += gravityAccel;
 				moveStep *= drag;
@@ -175,20 +177,28 @@ namespace AimPrediction {
 
 				elapsedTime += timeStep;
 
-				if (results.Count > 1 && !hasCollided) {
+				if (results.Count > 1) {
+					if (hasCollided) {
+						hasCollided = false;
+						continue;
+					}
+					
 					RaycastHit2D hit;
 					Vector2 previousPosition = results[results.Count - 2];
 					Vector2 currentPosition = results[results.Count - 1];
 
 					hit = Physics2D.Linecast(previousPosition, currentPosition, _layerMaskId);
 					if (hit.collider != null) {
+						collisionsCount++;
 						hasCollided = true;
 
-						if (_stopPredictionOnFirstCollision)
+						if (collisionsCount > _maxCollisionsToStopPrediction) {
+							results.RemoveAt(results.Count - 1);
 							break;
-						
-						moveStep = Vector3.Reflect(moveStep, hit.normal) * _bodyBounciness;
-						pos = hit.point;
+						}
+
+						moveStep = Vector3.Reflect(moveStep * _bodyBounciness, hit.normal);
+						pos = hit.point + moveStep;
 						results[results.Count - 1] = pos;
 					}
 				}
