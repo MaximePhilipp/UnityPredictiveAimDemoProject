@@ -62,7 +62,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1108963123755136}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -6.48, y: -2.12, z: -0.04548444}
+  m_LocalPosition: {x: 4.26, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4001115658600540}
@@ -80,8 +80,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4755c11856804335aaf03f8f2f9faa79, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _dotsToDisplay: 200
-  _predictionTime: 3
+  _displayType: 1
+  _dotsToDisplay: 20
+  _predictionTime: 1.5
   _stopPredictionOnFirstCollision: 0
   _dotPrefab: {fileID: 212284636838508442, guid: 5cc99d07516304ae7b80b4b64118fc66,
+    type: 2}
+  _linePrefab: {fileID: 120641541326945986, guid: a886b79998de24bedb3f5d472f11f146,
     type: 2}

@@ -7,21 +7,30 @@ using UnityEngine;
 namespace AimPrediction {
 	public class AimPredictionManager : MonoBehaviour {
 
-		[Tooltip("The maximum amount of dots to display for the aim.")]
-		[SerializeField] private int _dotsToDisplay;
-		[Tooltip("The higher the value, the bigger the aim will be.")]
+		public enum AimDisplayType {
+			Dots,
+			Line
+		}
+
+		[SerializeField] private AimDisplayType _displayType;
+		[Tooltip("The steps for the prediction ; the larger the smoother it will be!")]
+		[SerializeField] private int _predictionsSteps;
+		[Tooltip("Defines how much time ahead should be predicted.")]
 		[SerializeField] private float _predictionTime;
 		[SerializeField] private bool _stopPredictionOnFirstCollision;
 		
 		[SerializeField] private SpriteRenderer _dotPrefab;
+		[SerializeField] private LineRenderer _linePrefab;
 		
 		
 		
 		private int _layerMaskId;
 		private bool _isInit;
 		private List<SpriteRenderer> _dots;
+		private List<LineRenderer> _lines;
 		private float _shooterMaxVelocity;
 		private Rigidbody2D _objectBody;
+		private float _bodyBounciness;
 		
 		
 		
@@ -33,10 +42,18 @@ namespace AimPrediction {
 		/// Sets the basic information needed for the aim prediction. Call this before anything else!
 		/// </summary>
 		/// <param name="shooterMaxVelocity">The maximum force magnitude applied to your object by the shooter.</param>
-		/// <param name="objectGravityScale">The rigidbody of your object's prefab. The component will extract the needed physics information.</param>
+		/// <param name="objectRigidBody">The rigidbody of your object's prefab. The component will extract the needed physics information.</param>
 		public void Init(float shooterMaxVelocity, Rigidbody2D objectRigidBody) {
 			_shooterMaxVelocity = shooterMaxVelocity;
 			_objectBody = objectRigidBody;
+
+			if (_objectBody.sharedMaterial != null)
+				_bodyBounciness = _objectBody.sharedMaterial.bounciness;
+			else if (_objectBody.GetComponent<Collider2D>())
+				_bodyBounciness = _objectBody.GetComponent<Collider2D>().bounciness;
+			else
+				_bodyBounciness = 1f;
+			
 			_isInit = true;
 		}
 		
@@ -57,7 +74,7 @@ namespace AimPrediction {
 		}
 
 		/// <summary>
-		/// Updates the aim prediction with the current aim information. Usually this method is called on Update but you
+		/// Updates the aim prediction with the current aim information. Usually this method should be called on Update but you
 		/// can call this less often if you want a more jittery display.
 		/// </summary>
 		/// <param name="aimVector">The normalized vector of the current aim.</param>
@@ -89,11 +106,18 @@ namespace AimPrediction {
 					break;
 				}
 			}
-			
-			_dots = new List<SpriteRenderer>();
-			for (int i = 0; i < _dotsToDisplay; i++) {
-				SpriteRenderer dot = Instantiate(_dotPrefab, Vector3.zero, Quaternion.identity, container);
-				_dots.Add(dot);
+
+			if (_displayType == AimDisplayType.Dots) {
+				_dots = new List<SpriteRenderer>();
+				for (int i = 0; i < _predictionsSteps; i++) {
+					SpriteRenderer dot = Instantiate(_dotPrefab, Vector3.zero, Quaternion.identity, container);
+					_dots.Add(dot);
+				}
+			}
+			else if (_displayType == AimDisplayType.Line) {
+				_lines = new List<LineRenderer>();
+				for(int i = 0 ; i < _predictionsSteps - 1 ; i++)
+					_lines.Add(Instantiate(_linePrefab, Vector3.zero, Quaternion.identity, container));
 			}
 
 			Hide();
@@ -103,21 +127,37 @@ namespace AimPrediction {
 		private void PredictTrajectory(Vector3 startVelocity) {
 			List<Vector2> predictedPositions = Plot(_objectBody, transform.position, startVelocity);
 
-			for (int i = 0; i < _dots.Count; i++) {
-				if (i > predictedPositions.Count - 1) {
-					if(_dots[i].gameObject.activeSelf)
-						_dots[i].gameObject.SetActive(false);
-					continue;
+			if (_displayType == AimDisplayType.Dots) {
+				for (int i = 0; i < _dots.Count; i++) {
+					if (i > predictedPositions.Count - 1) {
+						if (_dots[i].gameObject.activeSelf)
+							_dots[i].gameObject.SetActive(false);
+						continue;
+					}
+
+					_dots[i].transform.position = predictedPositions[i];
+					if (!_dots[i].gameObject.activeSelf)
+						_dots[i].gameObject.SetActive(true);
 				}
-				
-				_dots[i].transform.position = predictedPositions[i];
-				if(!_dots[i].gameObject.activeSelf)
-					_dots[i].gameObject.SetActive(true);
+			}
+			else if (_displayType == AimDisplayType.Line) {
+				for (int i = 0; i < _lines.Count; i++) {
+					if (i > predictedPositions.Count - 2) {
+						if(_lines[i].gameObject.activeSelf)
+							_lines[i].gameObject.SetActive(false);
+						continue;
+					}
+					
+					_lines[i].SetPosition(0, predictedPositions[i]);
+					_lines[i].SetPosition(1, predictedPositions[i + 1]);
+					if(!_lines[i].gameObject.activeSelf)
+						_lines[i].gameObject.SetActive(true);
+				}
 			}
 		}
 		
 		public List<Vector2> Plot(Rigidbody2D body, Vector2 pos, Vector2 velocity) {
-			float timeStep = Mathf.Max( _predictionTime / (_dotsToDisplay * 1f), Time.fixedDeltaTime / Physics2D.velocityIterations);
+			float timeStep = Mathf.Max( _predictionTime / (_predictionsSteps * 1f), Time.fixedDeltaTime / Physics2D.velocityIterations);
 			List<Vector2> results = new List<Vector2>();
  
 			Vector2 gravityAccel = Physics2D.gravity * body.gravityScale * timeStep * timeStep;
@@ -141,13 +181,13 @@ namespace AimPrediction {
 					Vector2 currentPosition = results[results.Count - 1];
 
 					hit = Physics2D.Linecast(previousPosition, currentPosition, _layerMaskId);
-					if (hit.collider != null && !hasCollided) {
+					if (hit.collider != null) {
 						hasCollided = true;
 
 						if (_stopPredictionOnFirstCollision)
 							break;
 						
-						moveStep = Vector3.Reflect(moveStep, hit.normal) * body.GetComponent<Collider2D>().bounciness;
+						moveStep = Vector3.Reflect(moveStep, hit.normal) * _bodyBounciness;
 						pos = hit.point;
 						results[results.Count - 1] = pos;
 					}
