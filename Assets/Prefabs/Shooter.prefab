@@ -51,7 +51,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad9363d2f507f4df0b354316ae2928ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _objectToThrow: {fileID: 1681426267199016, guid: 17fb7999193824c99af193ca7caba427,
-    type: 2}
+  _objectToThrow: {fileID: 0}
   _aimPrediction: {fileID: 0}
   _shooterMaxStrength: 40

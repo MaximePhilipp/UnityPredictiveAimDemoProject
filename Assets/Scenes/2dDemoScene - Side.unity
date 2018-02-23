@@ -157,6 +157,12 @@ Prefab:
       propertyPath: _aimPrediction
       value: 
       objectReference: {fileID: 315063363}
+    - target: {fileID: 114312771735750424, guid: b742c51f652204bb3bbc8c2e354dadfd,
+        type: 2}
+      propertyPath: _objectToThrow
+      value: 
+      objectReference: {fileID: 1681426267199016, guid: b9ba25375caea45c1bbd63c2171c621b,
+        type: 2}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: b742c51f652204bb3bbc8c2e354dadfd, type: 2}
   m_IsPrefabParent: 0
@@ -763,12 +769,17 @@ Prefab:
     - target: {fileID: 114715845874887268, guid: b9e65bdd5ae5e4e66ac2fd5ad8a117ed,
         type: 2}
       propertyPath: _predictionTime
-      value: 2
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: 114715845874887268, guid: b9e65bdd5ae5e4e66ac2fd5ad8a117ed,
         type: 2}
       propertyPath: _stopPredictionOnFirstCollision
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114715845874887268, guid: b9e65bdd5ae5e4e66ac2fd5ad8a117ed,
+        type: 2}
+      propertyPath: _maxCollisionsToStopPrediction
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: b9e65bdd5ae5e4e66ac2fd5ad8a117ed, type: 2}
